@@ -1,0 +1,5 @@
+.git
+aws
+deploy-doker.sh
+node_modules
+README.md
