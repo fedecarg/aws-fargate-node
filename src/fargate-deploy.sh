@@ -2,12 +2,12 @@
 
 ################################################################################
 
-       _NAME_="ecs-deploy.sh"
+       _NAME_="fargate-deploy.sh"
     _PURPOSE_="This script builds a Docker container and deploys it to \
                Amazon's ECS using the Task Definition and Service entities."
    _REQUIRES_="aws, docker, python, git, npm"
       _SHELL_="bash"
-    _VERSION_="1.0"
+    _VERSION_="1.0.0"
      _AUTHOR_="Federico Cargnelutti <fedecarg@gmail.com>"
 
 ################################################################################
@@ -97,7 +97,7 @@ SEMVER="${SEMVER:-patch}"
 # Load config file
 #===============================================================================
 
-source $SCRIPT_DIR/ecs-config.sh
+source $SCRIPT_DIR/fargate-config.sh
 
 
 #===============================================================================
@@ -208,7 +208,7 @@ if [ "${ECS_UPDATE_SERVICE}" = true ]; then
     export ECR_IMAGE GIT_CURRENT_BRANCH GIT_REVISION GIT_USER APP_PORT APP_ENV
 
     # Create the new ECS container definition from the last task definition
-    NEW_CONTAINER_DEF=$(echo "${PREVIOUS_TASK_DEF}" | python "${SCRIPT_DIR}/ecs-container-definition.py")
+    NEW_CONTAINER_DEF=$(echo "${PREVIOUS_TASK_DEF}" | python "${SCRIPT_DIR}/ecs/update-task-definition.py")
 
     echo $(colour_green "Registering the new task definition...")
     aws ecs register-task-definition \
