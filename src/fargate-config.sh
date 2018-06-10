@@ -4,7 +4,7 @@
 AWS_ACCOUNT_ID="123456"
 
 # Named profile defined in ~/.aws/config
-AWS_DEFAULT_PROFILE="myapp"
+AWS_DEFAULT_PROFILE="node-webapp"
 
 # Region defined in ~/.aws/config
 AWS_REGION=$(aws configure get ${AWS_DEFAULT_PROFILE}.region)
@@ -15,13 +15,13 @@ AWS_REGION=$(aws configure get ${AWS_DEFAULT_PROFILE}.region)
 #===============================================================================
 
 # ECS cluster name where tasks or services are grouped
-ECS_CLUSTER_NAME="myapp-dev"
+ECS_CLUSTER_NAME="node-webapp-dev"
 
 # A task definition is required to run Docker containers in ECS
-ECS_TASK_NAME="myapp-task-dev"
+ECS_TASK_NAME="node-webapp-task-dev"
 
 # A service name is required to know which task definition to use
-ECS_SERVICE_NAME="myapp-service-dev"
+ECS_SERVICE_NAME="node-webapp-service-dev"
 
 # CPU: 512  - Memory: 1024
 # CPU: 1024 - Memory: 2048
@@ -34,7 +34,7 @@ ECS_MEMORY="2048"
 #===============================================================================
 
 # Name of the repository
-ECR_NAME="myapp-repository"
+ECR_NAME="node-webapp-repository"
 
 # URI of the repository
 ECR_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
@@ -57,7 +57,7 @@ APP_ENV="${APP_ENV:-dev}"
 APP_PORT="${APP_PORT:-3000}"
 
 # Relative or absolute path to the app (and Dockerfile)
-APP_PATH=$(cd "${SCRIPT_DIR}/../"; pwd)
+APP_PATH=$(cd $(dirname "$0")/../node-webapp-example; pwd)
 
 
 #===============================================================================
