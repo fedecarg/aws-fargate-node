@@ -7,7 +7,7 @@
 #
 CONTAINER_DEFINITION=$(cat <<-EOF
 {
-    "name": "${APP_NAME}-container", 
+    "name": "${ECR_CONTAINER_NAME}", 
     "image": "${ECR_IMAGE}", 
     "portMappings": [{
         "protocol": "tcp",

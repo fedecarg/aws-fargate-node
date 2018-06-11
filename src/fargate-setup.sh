@@ -50,4 +50,8 @@ touch $SCRIPT_DIR/ecs/tasks/task-definition-$GIT_REVISION.json
 echo "${TASK_DEFINITION}" > $SCRIPT_DIR/ecs/tasks/task-definition-$GIT_REVISION.json
 
 
+#===============================================================================
+# TODO: Create Service
+#===============================================================================
 
+# https://docs.aws.amazon.com/cli/latest/reference/ecs/create-service.html

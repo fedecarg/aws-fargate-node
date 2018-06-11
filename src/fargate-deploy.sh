@@ -215,4 +215,3 @@ aws ecs update-service \
     --cluster "${ECS_CLUSTER_NAME}" \
     --service "${ECS_SERVICE_NAME}" \
     --task-definition "${ECS_TASK_NAME}"
-
