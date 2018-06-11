@@ -1,6 +1,6 @@
 {
   "name": "node-express-app",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "Federico Cargnelutti",
     "email": "fedecarg@gmail.com"
@@ -8,7 +8,7 @@
   "scripts": {
     "build:dev": "echo $NODE_ENV",
     "build:prod": "echo $NODE_ENV",
-    "start": "./node_modules/.bin/cross-env ./node_modules/.bin/nodemon app.js",
+    "start": "./node_modules/.bin/cross-env ./node_modules/.bin/nodemon app.js"
   },
   "dependencies": {
     "body-parser": "^1.15.2",

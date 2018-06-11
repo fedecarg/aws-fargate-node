@@ -5,7 +5,7 @@
        _NAME_="fargate-deploy.sh"
     _PURPOSE_="This script builds a Docker container and deploys it to \
                Amazon's ECS using the Task Definition and Service entities."
-   _REQUIRES_="aws, docker, python, git, npm"
+   _REQUIRES_="aws, docker, git, npm"
       _SHELL_="bash"
     _VERSION_="1.0.0"
      _AUTHOR_="Federico Cargnelutti <fedecarg@gmail.com>"
@@ -71,23 +71,11 @@ while [ "$1" != "" ]; do
 done
 
 
-# This directory
-SCRIPT_DIR=$(dirname "$0")
-
 # Build, tag and push image to repository
 ECR_DEPLOY_IMAGE="${ECR_DEPLOY_IMAGE:-false}"
 
 # Update service to use the new task definition
 ECS_UPDATE_SERVICE=false
-
-# Set current git branch
-GIT_CURRENT_BRANCH=$(git branch | grep \* | cut -d ' ' -f2)
-
-# Git revision SHA1 hash
-GIT_REVISION=$(git rev-parse "${GIT_CURRENT_BRANCH}")
-
-# Git uses a username to associate commits with an identity
-GIT_USER=$(git config --global user.name)
 
 # Semantic version (mayor, minor or patch)
 SEMVER="${SEMVER:-patch}"
@@ -97,6 +85,8 @@ SEMVER="${SEMVER:-patch}"
 # Load config file
 #===============================================================================
 
+# Absolute path to this directory
+SCRIPT_DIR=$(cd $(dirname "$0"); pwd)
 source $SCRIPT_DIR/fargate-config.sh
 
 
@@ -115,7 +105,7 @@ echo "Service name       : $(colour_green $ECS_SERVICE_NAME)\n"
 echo "App root dir       : $(colour_green $APP_PATH)"
 echo "App environment    : $(colour_green $APP_ENV)"
 echo "App port           : $(colour_green $APP_PORT)\n"
-echo "Git release branch : $([ "$GIT_CURRENT_BRANCH" != "$GIT_RELEASE_BRANCH" ] && colour_red $GIT_RELEASE_BRANCH || colour_green $GIT_RELEASE_BRANCH)"
+echo "Git release branch : $([ "$GIT_CURRENT_BRANCH" != "$GIT_RELEASE_BRANCH" ] && colour_red $GIT_RELEASE_BRANCH || colour_green $GIT_CURRENT_BRANCH)"
 echo "Git revision       : $(colour_green $GIT_REVISION)"
 echo "Git username       : $(colour_green $GIT_USER)\n"
 
@@ -129,104 +119,103 @@ if [ "$GIT_CURRENT_BRANCH" != "$GIT_RELEASE_BRANCH" ]; then
     exit 1
 fi
 
+if [ ! -f "${$APP_PATH}/Dockerfile" ]; then
+    echo $(colour_red "error: Dockerfile not found in ${APP_PATH}")
+    exit 1
+fi
+
+if [ "${ECR_DEPLOY_IMAGE}" = false ]; then
+    exit 0
+fi
+
+cd $APP_PATH
+
 
 #===============================================================================
-# AWS authentication
+# Login to AWS
 #===============================================================================
 
 export AWS_DEFAULT_PROFILE
 
-echo $(colour_green "Sending credentials to ECR...")
+echo $(colour_green "Sending credentials to AWS...")
 $(aws ecr get-login --no-include-email --region $AWS_REGION)
 
 [ $? -ne 0 ] && exit 1
 
 
 #===============================================================================
-# Build, tag and push image
+# Bump version of the Node.js app
 #===============================================================================
 
-if [ "${ECR_DEPLOY_IMAGE}" = true ]; then
-    cd $APP_PATH
+VERSION=$(npm version $SEMVER)
+[ $? -ne 0 ] && exit 1
+echo $(colour_green "Version of the app: ${VERSION}")
 
-    if [ ! -f "Dockerfile" ]; then
-        echo $(colour_red "error: Dockerfile not found in ${APP_PATH}")
-        exit 1
-    fi
+# Create or update release.json file
+printf '{\n\t"version": "%s",\n\t"GIT_CURRENT_BRANCH": "%s",\n\t"git_revision": "%s",\n\t"git_user": "%s"\n}' \
+   "$VERSION" \
+   "$GIT_CURRENT_BRANCH" \
+   "$GIT_REVISION" \
+   "$GIT_USER" \
+   > release.json 
 
-    VERSION=$(npm version $SEMVER)
-    [ $? -ne 0 ] && exit 1
-    echo $(colour_green "Version of the app: ${VERSION}")
-
-    # Create or update release.json file
-    printf '{\n\t"version": "%s",\n\t"git_branch": "%s",\n\t"git_revision": "%s",\n\t"git_user": "%s"\n}' \
-       "$VERSION" \
-       "$GIT_RELEASE_BRANCH" \
-       "$GIT_REVISION" \
-       "$GIT_USER" \
-       > release.json 
-
-    # Build an image from a Dockerfile
-    echo $(colour_green "Building Docker image...")
-    docker build --tag ${ECR_NAME} --build-arg PORT=$APP_PORT --build-arg ENVIRONMENT=$APP_ENV .
-    [ $? -ne 0 ] && exit 1
-
-    # Tag the new Docker image to the remote repo
-    echo $(colour_green "Tagging Docker image...")
-    docker tag $ECR_NAME "${ECR_URI}/${ECR_NAME}:${GIT_REVISION}"
-
-    # Push to the remote ECR repo
-    echo $(colour_green "Pushing Docker image to ${ECR_URI}/${ECR_NAME}:${GIT_REVISION}...")
-    docker push "${ECR_URI}/${ECR_NAME}:${GIT_REVISION}"
-
-    git push origin $VERSION
-    [ $? -ne 0 ] && exit 1
-
-    ECS_UPDATE_SERVICE=true
-fi
+cat release.json
 
 
 #===============================================================================
-# Register task definition and update service
+# Build, tag and push a Docker image
 #===============================================================================
 
-if [ "${ECS_UPDATE_SERVICE}" = true ]; then
-    
-    if [ "$(docker images -q $ECR_IMAGE 2> /dev/null)" == "" ]; then
-        echo $(colour_red "error: an image does not exist locally with the tag ${ECR_IMAGE}")
-        exit 1
-    fi
+# Build an image from a Dockerfile
+echo $(colour_green "Building Docker image...")
+docker build --tag ${ECR_NAME} --build-arg PORT=$APP_PORT --build-arg ENVIRONMENT=$APP_ENV .
+[ $? -ne 0 ] && exit 1
 
-    # Get previous task definition from ECS
-    PREVIOUS_TASK_DEF=$(aws ecs describe-task-definition --region $AWS_REGION --task-definition $ECS_TASK_NAME --output json)
+# Tag an image referenced by name (ECR_NAME)
+echo $(colour_green "Tagging Docker image...")
+docker tag $ECR_NAME "${ECR_URI}/${ECR_NAME}:${GIT_REVISION}"
 
-    if [ -z "${PREVIOUS_TASK_DEF}" ]; then
-        echo $(colour_red "error: invalid task definition ${ECS_TASK_NAME}")
-        exit 1
-    fi
+# Push a new image to an ECR registry
+echo $(colour_green "Pushing Docker image to ${ECR_URI}/${ECR_NAME}:${GIT_REVISION}...")
+docker push "${ECR_URI}/${ECR_NAME}:${GIT_REVISION}"
 
-    export ECR_IMAGE GIT_CURRENT_BRANCH GIT_REVISION GIT_USER APP_PORT APP_ENV
+# Push Git tag
+git push origin $VERSION
+[ $? -ne 0 ] && exit 1
 
-    # Create the new ECS container definition from the last task definition
-    NEW_CONTAINER_DEF=$(echo "${PREVIOUS_TASK_DEF}" | python "${SCRIPT_DIR}/ecs/update-task-definition.py")
 
-    echo $(colour_green "Registering the new task definition...")
-    aws ecs register-task-definition \
-        --region "${AWS_REGION}" \
-        --family "${ECS_TASK_NAME}" \
-        --requires-compatibilities "FARGATE" \
-        --cpu "${ECS_CPU}" \
-        --memory "${ECS_MEMORY}" \
-        --network-mode "awsvpc" \
-        --execution-role-arn "ecsTaskExecutionRole" \
-        --container-definitions "${NEW_CONTAINER_DEF}"
+#===============================================================================
+# Register Task Definition
+#===============================================================================
 
-    [ $? -ne 0 ] && exit 1
+# Create ECS container definition
+source $SCRIPT_DIR/ecs/task-definition-template.sh
 
-    echo $(colour_green "Updating the service to use the new task defintion...")
-    aws ecs update-service \
-        --region "${AWS_REGION}" \
-        --cluster "${ECS_CLUSTER_NAME}" \
-        --service "${ECS_SERVICE_NAME}" \
-        --task-definition "${ECS_TASK_NAME}"
-fi
+echo $(colour_green "Registering the new task definition...")
+aws ecs register-task-definition \
+    --region "${AWS_REGION}" \
+    --family "${ECS_TASK_NAME}" \
+    --requires-compatibilities "FARGATE" \
+    --cpu "${ECS_CPU}" \
+    --memory "${ECS_MEMORY}" \
+    --network-mode "awsvpc" \
+    --execution-role-arn "ecsTaskExecutionRole" \
+    --container-definitions "${CONTAINER_DEFINITION}"
+
+[ $? -ne 0 ] && exit 1
+
+touch $SCRIPT_DIR/ecs/tasks/task-definition-$GIT_REVISION.json
+echo "${TASK_DEFINITION}" > $SCRIPT_DIR/ecs/tasks/task-definition-$GIT_REVISION.json
+
+
+#===============================================================================
+# Update Service
+#===============================================================================
+
+echo $(colour_green "Updating the service to use the new task defintion...")
+aws ecs update-service \
+    --region "${AWS_REGION}" \
+    --cluster "${ECS_CLUSTER_NAME}" \
+    --service "${ECS_SERVICE_NAME}" \
+    --task-definition "${ECS_TASK_NAME}"
+
