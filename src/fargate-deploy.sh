@@ -33,7 +33,7 @@ usage()
     echo "    $ sh ${_NAME_} --deploy --version minor"
     echo ""
     echo "AWS PROFILE"
-    echo "    $ aws configure --profile myapp"
+    echo "    $ aws configure --profile node-webapp"
     echo "    AWS Access Key ID [None]: <secret>"
     echo "    AWS Secret Access Key [None]: <secret>"
     echo "    Default region name [None]: us-east-1"
@@ -73,9 +73,6 @@ done
 
 # Build, tag and push image to repository
 ECR_DEPLOY_IMAGE="${ECR_DEPLOY_IMAGE:-false}"
-
-# Update service to use the new task definition
-ECS_UPDATE_SERVICE=false
 
 # Semantic version (mayor, minor or patch)
 SEMVER="${SEMVER:-patch}"
