@@ -116,7 +116,7 @@ if [ "$GIT_CURRENT_BRANCH" != "$GIT_RELEASE_BRANCH" ]; then
     exit 1
 fi
 
-if [ ! -f "${$APP_PATH}/Dockerfile" ]; then
+if [ ! -f "${APP_PATH}/Dockerfile" ]; then
     echo $(colour_red "error: Dockerfile not found in ${APP_PATH}")
     exit 1
 fi
@@ -149,7 +149,7 @@ VERSION=$(npm version $SEMVER)
 echo $(colour_green "Version of the app: ${VERSION}")
 
 # Create or update release.json file
-printf '{\n\t"version": "%s",\n\t"GIT_CURRENT_BRANCH": "%s",\n\t"git_revision": "%s",\n\t"git_user": "%s"\n}' \
+printf '{\n\t"version": "%s",\n\t"GIT_CURRENT_BRANCH": "%s",\n\t"git_revision": "%s",\n\t"git_user": "%s"\n}\n}' \
    "$VERSION" \
    "$GIT_CURRENT_BRANCH" \
    "$GIT_REVISION" \

@@ -1,15 +1,5 @@
 #!/bin/bash
 
-# Account ID number on the AWS Management Console
-AWS_ACCOUNT_ID="123456789"
-
-# Named profile defined in ~/.aws/config
-AWS_DEFAULT_PROFILE="node-webapp"
-
-# Region defined in ~/.aws/config
-AWS_REGION=$(aws configure get ${AWS_DEFAULT_PROFILE}.region)
-
-
 #===============================================================================
 # Web application
 #===============================================================================
@@ -25,6 +15,37 @@ APP_PORT="${APP_PORT:-3000}"
 
 # Absolute path to the app (and Dockerfile)
 APP_PATH=$(cd $SCRIPT_DIR/../node-webapp-example; pwd)
+
+
+#===============================================================================
+# Git
+#===============================================================================
+
+# Git release branch name (defaults to current branch)
+GIT_RELEASE_BRANCH=$(git branch | grep \* | cut -d ' ' -f2)
+
+# Set current git branch
+GIT_CURRENT_BRANCH=$(git branch | grep \* | cut -d ' ' -f2)
+
+# Git revision SHA1 hash
+GIT_REVISION=$(git rev-parse "${GIT_CURRENT_BRANCH}")
+
+# Git uses a username to associate commits with an identity
+GIT_USER=$(git config --global user.name)
+
+
+#===============================================================================
+# AWS
+#===============================================================================
+
+# Account ID number on the AWS Management Console
+AWS_ACCOUNT_ID="123456789"
+
+# Named profile defined in ~/.aws/config
+AWS_DEFAULT_PROFILE="node-webapp"
+
+# Region defined in ~/.aws/config
+AWS_REGION=$(aws configure get ${AWS_DEFAULT_PROFILE}.region)
 
 
 #===============================================================================
@@ -65,20 +86,4 @@ ECR_IMAGE="${ECR_URI}/${ECR_NAME}:${ECR_TAG}"
 # Name of the Docker container
 ECR_CONTAINER_NAME="${APP_NAME}-container"
 
-
-#===============================================================================
-# Git
-#===============================================================================
-
-# Git release branch name (defaults to current branch)
-GIT_RELEASE_BRANCH=$(git branch | grep \* | cut -d ' ' -f2)
-
-# Set current git branch
-GIT_CURRENT_BRANCH=$(git branch | grep \* | cut -d ' ' -f2)
-
-# Git revision SHA1 hash
-GIT_REVISION=$(git rev-parse "${GIT_CURRENT_BRANCH}")
-
-# Git uses a username to associate commits with an identity
-GIT_USER=$(git config --global user.name)
 
