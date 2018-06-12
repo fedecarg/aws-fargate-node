@@ -107,7 +107,7 @@ echo "Git revision       : $(colour_green $GIT_REVISION)"
 echo "Git username       : $(colour_green $GIT_USER)\n"
 
 if [ -z "$AWS_REGION" ]; then
-    echo $(colour_red "error: invalid aws profile: ${AWS_DEFAULT_PROFILE}")
+    echo $(colour_red "error: invalid aws profile '${AWS_DEFAULT_PROFILE}'")
     exit 1
 fi
 
@@ -144,12 +144,25 @@ $(aws ecr get-login --no-include-email --region $AWS_REGION)
 # Bump version of the Node.js app
 #===============================================================================
 
+# Bump verison of the app
 VERSION=$(npm version $SEMVER)
 [ $? -ne 0 ] && exit 1
-echo $(colour_green "Version of the app: ${VERSION}")
+
+echo $(colour_green "Bumped ${SEMVER} version of the app to ${VERSION}")
+
+# Find top level git directory and push tag
+echo $(colour_green "Pushing GIT tag ${VERSION} to origin...")
+if [ $GIT_TOP_LEVEL_DIR == $(pwd) ]; then
+    git push origin $VERSION
+else
+    cd $GIT_TOP_LEVEL_DIR
+    git tag $VERSION
+    git push origin $VERSION
+    cd $APP_PATH
+fi
 
 # Create or update release.json file
-printf '{\n\t"version": "%s",\n\t"git_branch": "%s",\n\t"git_revision": "%s",\n\t"git_user": "%s"\n}\n}' \
+printf '{\n\t"version": "%s",\n\t"git_branch": "%s",\n\t"git_revision": "%s",\n\t"git_user": "%s"\n}\n' \
    "$VERSION" \
    "$GIT_CURRENT_BRANCH" \
    "$GIT_REVISION" \
@@ -176,10 +189,6 @@ docker tag $ECR_NAME "${ECR_URI}/${ECR_NAME}:${GIT_REVISION}"
 echo $(colour_green "Pushing Docker image to ${ECR_URI}/${ECR_NAME}:${GIT_REVISION}...")
 docker push "${ECR_URI}/${ECR_NAME}:${GIT_REVISION}"
 
-# Push Git tag
-git push origin $VERSION
-[ $? -ne 0 ] && exit 1
-
 
 #===============================================================================
 # Register Task Definition
@@ -188,7 +197,7 @@ git push origin $VERSION
 # Create ECS container definition
 source $SCRIPT_DIR/ecs/task-definition-template.sh
 
-echo $(colour_green "Registering the new task definition...")
+echo $(colour_green "Registering new task definition...")
 aws ecs register-task-definition \
     --region "${AWS_REGION}" \
     --family "${ECS_TASK_NAME}" \
@@ -201,17 +210,19 @@ aws ecs register-task-definition \
 
 [ $? -ne 0 ] && exit 1
 
-touch $SCRIPT_DIR/ecs/tasks/task-definition-$GIT_REVISION.json
-echo "${TASK_DEFINITION}" > $SCRIPT_DIR/ecs/tasks/task-definition-$GIT_REVISION.json
+touch $SCRIPT_DIR/ecs/output/task-definition-$GIT_REVISION.json
+echo "${TASK_DEFINITION}" > $SCRIPT_DIR/ecs/output/task-definition-$GIT_REVISION.json
 
 
 #===============================================================================
 # Update Service
 #===============================================================================
 
-echo $(colour_green "Updating the service to use the new task defintion...")
+echo $(colour_green "Updating service with new task defintion...")
 aws ecs update-service \
     --region "${AWS_REGION}" \
     --cluster "${ECS_CLUSTER_NAME}" \
     --service "${ECS_SERVICE_NAME}" \
     --task-definition "${ECS_TASK_NAME}"
+
+#EOF

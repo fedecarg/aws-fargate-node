@@ -14,7 +14,7 @@ APP_ENV="${APP_ENV:-dev}"
 APP_PORT="${APP_PORT:-3000}"
 
 # Absolute path to the app (and Dockerfile)
-APP_PATH=$(cd $SCRIPT_DIR/../node-webapp-example; pwd)
+APP_PATH=$(cd $(dirname "$0")/../node-webapp-example; pwd)
 
 
 #===============================================================================
@@ -30,8 +30,11 @@ GIT_CURRENT_BRANCH=$(git branch | grep \* | cut -d ' ' -f2)
 # Git revision SHA1 hash
 GIT_REVISION=$(git rev-parse "${GIT_CURRENT_BRANCH}")
 
-# Git uses a username to associate commits with an identity
+# Git username to associate release with an identity
 GIT_USER=$(git config --global user.name)
+
+# Absolute path of the top-level directory
+GIT_TOP_LEVEL_DIR=$(git rev-parse --show-toplevel)
 
 
 #===============================================================================
@@ -87,3 +90,14 @@ ECR_IMAGE="${ECR_URI}/${ECR_NAME}:${ECR_TAG}"
 ECR_CONTAINER_NAME="${APP_NAME}-container"
 
 
+#===============================================================================
+# Amazon Elastic Load Balancer (ELB)
+#===============================================================================
+
+# Name of the load balancer
+ELB_NAME="${ECS_CLUSTER_NAME}-elb"
+
+# Amazon Resource Name (ARN) of the LBC target group associated with the service
+ELB_TARGET_GROUP_ARN="arn:aws:elasticloadbalancing:${AWS_REGION}:${AWS_ACCOUNT_ID}:targetgroup/http-ip-target/fcd686125971656c"
+
+#EOF
