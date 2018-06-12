@@ -65,7 +65,5 @@ touch $service_definition_file
 echo "${SERVICE_DEFINITION}" > $service_definition_file
 
 echo "Creating Service..."
-aws ecs create-service \
-    --region "${AWS_REGION}" \
-	--cli-input-json file://$service_definition_file
+aws ecs create-service --region "${AWS_REGION}" --cli-input-json file://$service_definition_file
 #EOF
