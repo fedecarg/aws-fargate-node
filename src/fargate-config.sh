@@ -45,7 +45,7 @@ GIT_TOP_LEVEL_DIR=$(git rev-parse --show-toplevel)
 AWS_ACCOUNT_ID="123456789"
 
 # Named profile defined in ~/.aws/config
-AWS_DEFAULT_PROFILE="node-webapp"
+AWS_DEFAULT_PROFILE="${APP_NAME}"
 
 # Region defined in ~/.aws/config
 AWS_REGION=$(aws configure get ${AWS_DEFAULT_PROFILE}.region)
@@ -94,10 +94,10 @@ ECR_CONTAINER_NAME="${APP_NAME}-container"
 # Amazon Elastic Load Balancer (ELB)
 #===============================================================================
 
-# Name of the load balancer
+# The name of the load balancer
 ELB_NAME="${ECS_CLUSTER_NAME}-elb"
 
-# Amazon Resource Name (ARN) of the LBC target group associated with the service
+# The Amazon Resource Name (ARN) of the LBC target group associated with the service
 ELB_TARGET_GROUP_ARN="arn:aws:elasticloadbalancing:${AWS_REGION}:${AWS_ACCOUNT_ID}:targetgroup/http-ip-target/fcd686125971656c"
 
 #EOF
