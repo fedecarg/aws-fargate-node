@@ -55,9 +55,6 @@ aws ecs register-task-definition --cli-input-json file://$task_definition_file
 # TODO: Create Service
 #===============================================================================
 
-# check if $ELB_NAME is active or not
-# aws elb describe-load-balancers  --load-balancer-name node-webapp-dev-elb --profile node-webapp
-
 source $SCRIPT_DIR/ecs/service-definition-template.sh
 
 service_definition_file="${SCRIPT_DIR}/ecs/output/service-definition-${GIT_REVISION}.json"
@@ -66,4 +63,5 @@ echo "${SERVICE_DEFINITION}" > $service_definition_file
 
 echo "Creating Service..."
 aws ecs create-service --region "${AWS_REGION}" --cli-input-json file://$service_definition_file
+
 #EOF
