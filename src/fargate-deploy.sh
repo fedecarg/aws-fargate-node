@@ -149,7 +149,7 @@ VERSION=$(npm version $SEMVER)
 echo $(colour_green "Version of the app: ${VERSION}")
 
 # Create or update release.json file
-printf '{\n\t"version": "%s",\n\t"GIT_CURRENT_BRANCH": "%s",\n\t"git_revision": "%s",\n\t"git_user": "%s"\n}\n}' \
+printf '{\n\t"version": "%s",\n\t"git_branch": "%s",\n\t"git_revision": "%s",\n\t"git_user": "%s"\n}\n}' \
    "$VERSION" \
    "$GIT_CURRENT_BRANCH" \
    "$GIT_REVISION" \
