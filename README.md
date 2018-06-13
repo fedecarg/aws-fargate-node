@@ -1,5 +1,5 @@
 # Description
-The script `fargate-deploy.sh` allows Node.js developers to deploy a high-availability webapp to Amazon ECS using Docker and AWS Fargate http://fargate.nodejsapp.cloud
+The script `src/fargate-deploy.sh` allows Node.js developers to deploy high-availability web applications to Amazon ECS using Docker and AWS Fargate http://fargate.nodejsapp.cloud
 
 # Usage information
 
