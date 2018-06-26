@@ -1,8 +1,6 @@
 # Overview
 
-The `src/fargate-deploy.sh` allows Node.js developers to deploy high-availability apps to Amazon ECS using Docker, AWS Fargate and the AWS CLI.
-
-http://fargate.nodejsapp.cloud
+The `src/fargate-deploy.sh` allows Node.js developers to deploy high-availability apps to Amazon ECS using Docker, AWS Fargate and the AWS CLI. See PoC: http://fargate.nodejsapp.cloud
 
 The The `src/fargate-setup.sh` script helps you set up a cluster, register a task definition, create a service and perform other common scenarios in Amazon ECS with the AWS CLI. Ensure you are using the latest version of the AWS CLI. For more information on how to use AWS Fargate, see [What is Amazon Elastic Container Service?](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/Welcome.html)
 
