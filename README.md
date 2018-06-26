@@ -20,9 +20,9 @@ Not passing the `--deploy` option to `src/fargate-deploy.sh` causes the script t
 ```
 $ src/fargate-deploy.sh --env dev --port 3000 --version minor
 ```
-![](https://raw.githubusercontent.com/fedecarg/aws-fargate-node/master/node-webapp-example/public/images/aws-fargate-deploy.png)
 
 ### Deployment 
 ```
 $ src/fargate-deploy.sh --env dev --port 3000 --version minor --deploy
 ```
+![](https://raw.githubusercontent.com/fedecarg/aws-fargate-node/master/node-webapp-example/public/images/aws-fargate-deploy.png)
