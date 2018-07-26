@@ -12,8 +12,8 @@ You're going to need:
 * AWS CLI, version 1.15.20 or newer
 * Docker, latest version
 
-### Initial setup
-**Ubuntu**
+## Initial setup
+### Ubuntu
 Install the AWS CLI using `pip`:
 ```
 sudo apt-get update
@@ -22,7 +22,7 @@ curl -O https://bootstrap.pypa.io/get-pip.py
 sudo python get-pip.py
 sudo pip install awscli --upgrade
 ```
-**macOS**
+### macOS
 Install the AWS CLI using `brew`:
 ```
 brew install awscli
