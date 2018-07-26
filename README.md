@@ -4,6 +4,35 @@ The `src/fargate-deploy.sh` bash script allows Node.js developers to deploy high
 
 The `src/fargate-setup.sh` script can be used to set up a cluster, register a task definition, create a service and perform other common tasks in Amazon ECS with the AWS CLI. Ensure you are using the latest version of the AWS CLI. For more information on how to use AWS Fargate, see [What is Amazon Elastic Container Service?](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/Welcome.html)
 
+## Getting started
+
+You're going to need:
+
+* Linux or macOS
+* AWS CLI, version 1.15.20 or newer
+* Docker, latest version
+
+### Initial setup
+**Ubuntu**
+Install the AWS CLI using `pip`:
+```
+sudo apt-get update
+sudo apt-get install -qq -y python-pip libpython-dev
+curl -O https://bootstrap.pypa.io/get-pip.py
+sudo python get-pip.py
+sudo pip install awscli --upgrade
+```
+**macOS**
+Install the AWS CLI using `brew`:
+```
+brew install awscli
+```
+
+## Build and Provision
+1. Clone (or download) this GitHub repo
+2. Build your AWS infrastructure using [Terraform](https://www.terraform.io/intro/getting-started/build.html) or [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html)
+3. Provision Docker container
+
 ## Usage 
 ### Usage information
 ```
